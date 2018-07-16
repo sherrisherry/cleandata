@@ -1,0 +1,239 @@
+---
+title: "Wrangling Business Dataset by \"cleandata\" v0.1.0"
+author: "Sherry Zhao"
+date: "July 22, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## About This Demo
+
+This file demonstrates a typical process of using R package "<a href="https://cran.r-project.org/package=cleandata" target="_blank">cleandata</a>" to prepare data for machine learning.
+
+### R Package "cleandata"
+
+A collection of functions that work with data frame to inspect, impute, and encode data. The functions for imputation and encoding can produce log files to help you keep track of data manipulation process.
+
+Available on CRAN: <a href="https://cran.r-project.org/package=cleandata" target="_blank">https://cran.r-project.org/package=cleandata</a>
+
+Source Code on GitHub: <https://github.com/sherrisherry/cleandata>
+
+Issues and Suggestions: [https://github.com/sherrisherry/cleandata/issues](https://github.com/sherrisherry/cleandata/issues)
+
+### Dataset Used in This Demo
+
+* Name: Ames Housing dataset
+* Source: Kaggle contest <a href="https://www.kaggle.com/c/house-prices-advanced-regression-techniques" target="_blank">House Prices</a>
+
+With 79 explanatory variables describing (almost) every aspect of residential homes in Ames, Iowa for predicting housing prices, this dataset is a typical example of what a business analyst encounters everyday.
+
+***
+
+## Inspection
+
+According to the <a href="https://www.kaggle.com/c/house-prices-advanced-regression-techniques/download/data_description.txt" target="_blank">description</a> of this dataset, the "NA"s in some columns aren't missing value. To prevent R from comfusing them with true missing values, read in the data files without converting any value to the `NA` in R.
+
+The train set should have only one more column *SalePrice* than the test set.
+
+```{r preparation}
+# import 'cleandata' package.
+library('cleandata')
+
+# read in the training and test datasets without converting 'NA's to missing values.
+train <- read.csv('data/train.csv', na.strings = "", strip.white = TRUE)
+test <- read.csv('data/test.csv', na.strings = "", strip.white = TRUE)
+
+# summarize the training set and test set
+cat(paste('train: ', nrow(train), 'obs. ', ncol(train), 'cols\ncolumn names:\n', toString(colnames(train)), 
+          '\n\ntest: ', nrow(test), 'obs. ', ncol(test), 'cols\ncolumn names:\n', toString(colnames(test)), '\n'))
+```
+
+To ensure consistency in the following imputation and encoding process across the train set and the test set, I appended the test set to the train set. The *SalePrice* values of the rows of the test set was set to `NA` to distinguish them from the rows of the train set. The resulting data frame was called *df*.
+
+```{r combinedata}
+# filling the target columns of the test set with NA then combining test and training sets
+test$SalePrice <- NA
+df <- rbind(train, test)
+rm(train, test)
+```
+
+> Function `inspect_na`
+
+`inspect_na()` counts the number of `NA`s in each column and sort them in descending order. In the following operation, `inspect_na()` returned the top 5 columns with missing values. If you want to see the number of missing values in every column, leave parameter `top` as default. As supposed, only *SalePrice* contained missing values, which equaled to the number of rows in the test set.
+
+```{r inspect_na}
+inspect_na(df, top = 5)
+```
+
+The NAs in the columns listed in *NAisNoA* were what was refered to as 'none'-but-not-'NA' values. In these columns, NA had only one possible value - "not applicable". I replaced these NAs with *NoA* to prevent imputing them later.
+
+```{r naisnoa}
+# in the 'NAisNoA' columns, NA means this attribute doesn't apply to them, not missing.
+NAisNoA <- c('Alley', 'BsmtQual', 'BsmtCond', 'BsmtExposure', 'BsmtFinType1', 'BsmtFinType2', 
+             'FireplaceQu', 'GarageType', 'GarageFinish', 'GarageQual', 'GarageCond', 
+             'PoolQC', 'Fence', 'MiscFeature')
+for(i in NAisNoA){levels(df[, i])[levels(df[, i]) == "NA"] <- "NoA"}
+```
+
+At this stage, I reconstructed the data frame *df* to inspect the true missing values.
+
+We can see that only *LotFrontage* had about 20% missing values. The other columns had few to no missing value.
+
+```{r}
+# write the dataset into a csv file then read this file back to df to reconstruct df
+write.csv(df, file = 'data/data.csv', row.names = FALSE)
+df <- read.csv('data/data.csv', na.strings = "NA", strip.white = TRUE)
+
+# see which predictors have most NAs
+inspect_na(df[, -ncol(df)], top = 25)
+```
+
+> Function `inspect_map`
+
+`inspect_map()` classifies the columns of a data frame. Before I further explain this function, I'd like to introduce 'scheme'. In package "cleandata", a scheme refers to a set of all the possible values of an enumerator. The factor objects in R are enumerators.
+
+Function `inspect_map` returns a list of *factor_cols* (list), *factor_levels* (list), *num_cols* (vector), *char_cols* (vector), *ordered_cols* (vector), and *other_cols* (vector).
+
+* *factor_cols*:	a list, in which each member is a vector of the names of the factorial columns that share the same scheme. The name of a vector is the same as its 1st member. Refer to the parameter `common` for more information about scheme.
+* *factor_levels*:	a list, in which each member is a scheme of the factorial columns. The name of a scheme is the same as its corresponding vector in *factor_cols*.
+* *num_cols*:	a vector, in which are the names of the numerical columns.
+* *char_cols*:	a vector, in which are the names of the string columns.
+* *ordered_cols*:	a vector, in which are the names of the ordered factorial columns.
+* *other_cols*:	a vector, in which are the names of the other columns.
+
+In the following codes, I specified that 2 factorial columns share the same scheme if their levels had more than 2 same values by setting the `common` parameter to 2. By default, the `common` parameter is 0, which means every level of 2 factorial columns should be the same for them to share the same scheme.
+
+```{r inspect_map}
+# create a map for imputation and encoding
+data_map <- inspect_map(df[, -ncol(df)], common = 2)
+summary(data_map)
+```
+
+This dataset only had factorial and numeric columns. I unpacked *data_map* before heading to imputation and encoding.
+
+```{r unpack}
+factor_cols <- data_map$factor_cols
+factor_levels <- data_map$factor_levels
+num_cols <- data_map$num_cols
+rm(data_map)
+```
+
+## Imputation and Encoding
+
+The functions for imputation and encoding keep track of your process by producing log files. This feature is by default disabled. To enable log files, I passed a list of arguments to the `log` parameter in every imputation or encoding function.
+
+```{r}
+# create a list of arguments for producing a log file
+log_arg <- list(file = 'log.txt', append = TRUE, split = FALSE)
+```
+
+*log_arg* stroed the arguments I passed to parameter `log`. The log file was named "log.txt", new information was appended to the file, and the contents to the log file weren't printed to the standard output.
+
+### Imputation Functions
+
+To prevent leakage, I instructed the imputation functions to use only rows of the train set to calculate the imputation values by passing an index to parameter `idx`.
+
+> Function `impute_mode`, `impute_median`, `impute_mean`
+
+`impute_mode()` works with both numerical, string, and factorial columns. It impute `NA`s by the modes of their corresponding columns.
+
+`impute_median()` and `impute_mean()` only work with numerical columns. They impute `NA`s by medians and means respectively.
+
+```{r impute}
+# impute NAs in factorial columns by the mode of corresponding columns
+lst <- unlist(factor_cols)
+df <- impute_mode(df, cols = lst, idx = !is.na(df$SalePrice), log = log_arg)
+
+# impute NAs in numerical columns by the median of corresponding columns
+lst <- num_cols
+df <- impute_median(df, cols = lst, idx = !is.na(df$SalePrice), log = log_arg)
+
+# check the result
+inspect_na(df[, -ncol(df)], top = 5)
+```
+
+
+### Encoding Functions
+
+Every encoding function prints summary of the columns before and after encoding by default. The output of every funcion is by default factorial. If you want numerical output, set parameter `out.int` to `TRUE` after making sure no missing value in the input.
+
+In this demo, I kept the encoded columns factorial because I intended to save the dataset into a csv file, which doesn't distinguish between factorial and numerical columns.
+
+#### Encoding Ordinal Columns
+
+In business datasets, we can often find ratings, which are ordinal and use similar schemes. Based on my experience, if many columns share the same scheme, they are likely to be ratings.
+
+```{r}
+summary(factor_cols)
+```
+
+In our dataset *ExterQual* and other 9 columns share the same scheme. After I checked their scheme and the description file, I was sure that they were ordinal.
+
+```{r}
+factor_levels$ExterQual
+```
+
+"Po": poor, "Fa": fair, "TA": typical/average, "Gd": good, "Ex": excellent
+
+> Function `encode_ordinal`
+
+`encode_ordinal()` encodes ordinal data into sequential integers by a given order. The argument passed to `none` is always encoded to 0. The 1st member of the vector passed to `order` is encoded to 1.
+
+```{r encode_ordinal}
+# encoding ordinal columns
+i <- 'ExterQual'; lst <- c('Po', 'Fa', 'TA', 'Gd', 'Ex')
+df[, factor_cols[[i]]] <- encode_ordinal(df[, factor_cols[[i]]], order = lst, none = 'NoA', log = log_arg)
+
+# removing encoded columns from the map
+factor_levels[[i]] <- NULL
+factor_cols[[i]] <- NULL
+```
+
+The *Utilities* column was binary according the dataset.
+
+```{r}
+factor_levels$Utilities
+levels(df$Utilities)
+```
+
+However, the description file indicates that it has 4 possible values: 'ELO', 'NoSeWa', 'NoSewr', 'AllPub'. Therefore, I encoded it as having 4 levels.
+
+```{r ordinal}
+# in dataset only "AllPub" "NoSeWa", with 2 NAs
+i <- 'Utilities'; lst <- c('ELO', 'NoSeWa', 'NoSewr', 'AllPub')
+df[, factor_cols[[i]]] <- encode_ordinal(df[, factor_cols[[i]], drop=FALSE], order = lst, log = log_arg)
+factor_levels[[i]]<-NULL
+factor_cols[[i]]<-NULL
+```
+
+#### Encoding Binary Columns
+
+```{r}
+# find all the 2-level columns
+lst <- lapply(factor_levels, length)
+lst <- as.data.frame(lst)
+colnames(lst[, lst == 2])
+```
+
+> Function `encode_binary`
+
+`encode_binary()` encodes binary data into 0 and 1, regardless of order.
+
+```{r encode_binary}
+# encode all the 2-level columns
+i <- c(factor_cols$Street, factor_cols$CentralAir)
+df[, i] <- encode_binary(df[, i, drop=FALSE], log = log_arg)
+```
+
+## The Log File
+
+Let's check the log file at the end.
+
+```{r end}
+cat(paste(readLines('log.txt'), collapse = '\n'))
+```
+
+=== end ===
