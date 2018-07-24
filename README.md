@@ -4,7 +4,7 @@ A collection of functions that work with data frame to inspect, impute, and enco
 
 Available on CRAN: https://cran.r-project.org/package=cleandata
 
-Demonstration: <a href="https://github.com/sherrisherry/cleandata/blob/master/Demo.html" target="_blank">Wrangling Ames Housing Dataset</a>
+Demonstration: <a href="http://htmlpreview.github.com/?https://github.com/sherrisherry/cleandata/blob/master/Demo.html" target="_blank">Wrangling Ames Housing Dataset</a>
 
 ### List of Functions
 
