@@ -20,9 +20,20 @@ encode_ordinal(x, order, none='', out.int=FALSE, full_print=TRUE, log=FALSE)
 
 \item{full_print}{When set to \code{FALSE}, only print minimum information.  A full output includes summary of \code{x} before and after encoding.}
 
-\item{log}{The parameters for \code{sink()}. Accept a list of \code{file}, \code{append}, and \code{split}.  If \code{FALSE}, no log file.}
+\item{log}{The arguments for \code{sink()}. Accept a list of \code{file}, \code{append}, and \code{split}.  If \code{FALSE}, no log file.}
 }
 \value{
 An encoded data frame.
 }
+\section{Warning}{\code{x} can only be a data frame. Don't pass a vector to it.}
+\examples{
+A <- as.factor(c('y', 'z', 'x', 'y', 'z'))
+B <- as.factor(c('y', 'x', 'z', 'z', 'x'))
+C <- as.factor(c('k', 'i', 'i', 'j', 'k'))
+df <- data.frame(A, B, C)
+df[, 1:2] <- encode_ordinal(df[,1:2], order = c('z', 'x', 'y'))
+df[, 3] <- encode_ordinal(df[, 3, drop = FALSE], order = c('k', 'j', 'i'))
+print(df)
+}
+\seealso{\code{\link{inspect_map}}}
 \keyword{manip}
