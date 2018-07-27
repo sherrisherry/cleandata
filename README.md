@@ -1,5 +1,8 @@
 # R Package "cleandata"
 
+[![CRAN status](https://www.r-pkg.org/badges/version/cleandata)](https://cran.r-project.org/package=cleandata) [![DOWNLOADSTOTAL](https://cranlogs.r-pkg.org/badges/grand-total/cleandata)](https://cranlogs.r-pkg.org/badges/grand-total/cleandata)
+
+
 A collection of functions that work with data frame to inspect, impute, and encode data. The functions for imputation and encoding can produce log files to help you keep track of data manipulation process.
 
 Available on CRAN: https://cran.r-project.org/package=cleandata
