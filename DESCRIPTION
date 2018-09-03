@@ -1,14 +1,17 @@
 Package: cleandata
 Type: Package
-Title: Functions to Inspect, Impute, and Encode Data, and to Keep Track of This Process
-Version: 0.1.0
+Title: To Inspect, Impute, Encode, and Partition Data; and to Keep Track of This Process
+Version: 0.2.0
 Author: Sherry Zhao
 Maintainer: Sherry Zhao <sxzhao@gwu.edu>
 Description: Functions to work with data frames to prepare data for further analysis.
-    The functions for imputation and encoding can produce log files to keep track of data manipulation process.
+    The functions for imputation, encoding, and Partitioning can produce log files to keep track of data manipulation process.
 BugReports: https://github.com/sherrisherry/cleandata/issues
+URL: https://github.com/sherrisherry/cleandata
 Depends: R (>= 3.0.0)
 Imports: stats
+Suggests: rmarkdown, knitr
 License: MIT + file LICENSE
 Encoding: UTF-8
+VignetteBuilder: knitr
 LazyData: true

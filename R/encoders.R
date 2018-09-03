@@ -13,17 +13,7 @@ encode_ordinal<-function(x,order,none='',out.int=FALSE,full_print=TRUE,log=FALSE
       x[,i]<-as.integer(x[,i])}
     if(full_print)print(summary(x))
   }
-  if(is.list(log)){
-    sink(file=log$file,append = log$append, split = log$split) # divert output to file
-    cat('Columns:\n\t')
-    cat(colnames(x),sep=', ')
-    cat('\nScheme:\n')
-    encode<-0:length(order)
-    names(encode)<-c(none,order)
-    print(encode)
-    cat('\n')
-    sink() # divert output back to console
-  }
+  if(is.list(log))log_plan1(x = x, log = log, sche.names = c(none,order), sche.codes = 0:length(order))
   return(x)
 }
 
@@ -40,15 +30,7 @@ encode_binary<-function(x,out.int=FALSE,full_print=TRUE,log=FALSE){
       for(j in 1:ncol(y))levels(y[,j])<-c(0,1)
       x[,cols[[i]]]<-y
       cat(paste('coded',j,'cols','\n'))
-      sink(file=log$file,append = log$append, split = log$split) # divert output to file
-      cat('Columns:\n\t')
-      cat(cols[[i]],sep=', ')
-      cat('\nScheme:\n')
-      encode<-c(0,1)
-      names(encode)<-lvs[[i]]
-      print(encode)
-      cat('\n')
-      sink() # divert output back to console
+	  log_plan1(x = x, log = log, sche.names = lvs[[i]], sche.codes = c(0,1))
     }
     rm(y)
   }
@@ -64,4 +46,22 @@ encode_binary<-function(x,out.int=FALSE,full_print=TRUE,log=FALSE){
     if(full_print)print(summary(x))
   }
   return(x)
+}
+
+encode_onehot<-function(x, colname.sep = '_', drop1st=FALSE, full_print=TRUE, log=FALSE){
+  if(is.null(dim(x)))stop('data frame degraded to vector, use df[ , , drop=FALSE]')
+  if(sum(is.na(x)))warning('NAs are ignored in encoding')
+  if(full_print)print(summary(x))
+  cols<-colnames(x)
+  encoded<-data.frame(row.names = row.names(x))
+  for(i in cols){
+  lvs<-if(drop1st) levels(x[,i])[2:nlevels(x[,i])] else levels(x[,i])
+  encoded[,paste(i,lvs,sep=colname.sep)]<-0L
+  for(j in lvs)encoded[x[,i]==j,paste(i,j,sep=colname.sep)]<-1L
+  cat(paste('coded col',i,';',length(lvs),'levels','\n'))
+  }
+  if(full_print)print(apply(encoded,2,sum))
+  if(is.list(log))
+	log_plan2(x = x, log = log, proc = 'e', method = 'Onehot', details = paste('Template of New Column Names: oldname', colname.sep, 'level; Dropping 1st Level: ', drop1st, sep=''))
+  return(encoded)
 }

@@ -1,8 +1,12 @@
 ---
-title: "Wrangling Business Dataset by \"cleandata\" v0.1.0"
+title: "Wrangling Business Data by \"cleandata\" v0.2.0"
 author: "Sherry Zhao"
-date: "July 22, 2018"
+date: "September 3, 2018"
 output: html_document
+vignette: >
+  %\VignetteIndexEntry{Wrangling Business Data by "cleandata"}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
 ---
 
 ```{r setup, include=FALSE}
@@ -15,11 +19,11 @@ This file demonstrates a typical process of using R package "<a href="https://cr
 
 ### R Package "cleandata"
 
-A collection of functions that work with data frame to inspect, impute, and encode data. The functions for imputation and encoding can produce log files to help you keep track of data manipulation process.
+A collection of functions that work with data frame to inspect, impute, encode, and partition data. The functions for imputation, encoding, and partitioning can produce log files to help you keep track of data manipulation process.
 
 Available on CRAN: <a href="https://cran.r-project.org/package=cleandata" target="_blank">https://cran.r-project.org/package=cleandata</a>
 
-Source Code on GitHub: <https://github.com/sherrisherry/cleandata>
+Source Codes on GitHub: <https://github.com/sherrisherry/cleandata>
 
 Issues and Suggestions: [https://github.com/sherrisherry/cleandata/issues](https://github.com/sherrisherry/cleandata/issues)
 
@@ -158,7 +162,7 @@ inspect_na(df[, -ncol(df)], top = 5)
 
 ### Encoding Functions
 
-Every encoding function prints summary of the columns before and after encoding by default. The output of every funcion is by default factorial. If you want numerical output, set parameter `out.int` to `TRUE` after making sure no missing value in the input.
+Every encoding function prints summary of the columns before and after encoding by default. The output of `encode_ordinal()` and `encode_binary()` is by default factorial. If you want numerical output, set parameter `out.int` to `TRUE` after making sure no missing value in the input.
 
 In this demo, I kept the encoded columns factorial because I intended to save the dataset into a csv file, which doesn't distinguish between factorial and numerical columns.
 
@@ -215,7 +219,8 @@ factor_cols[[i]]<-NULL
 # find all the 2-level columns
 lst <- lapply(factor_levels, length)
 lst <- as.data.frame(lst)
-colnames(lst[, lst == 2])
+lst <- colnames(lst[, lst == 2])
+cat(lst)
 ```
 
 > Function `encode_binary`
@@ -224,8 +229,37 @@ colnames(lst[, lst == 2])
 
 ```{r encode_binary}
 # encode all the 2-level columns
-i <- c(factor_cols$Street, factor_cols$CentralAir)
+i <- unlist(factor_cols[lst])
 df[, i] <- encode_binary(df[, i, drop=FALSE], log = log_arg)
+factor_levels[lst] <- NULL
+factor_cols[lst] <- NULL
+```
+
+#### Encoding other categorical Columns
+
+Although we may have found more ordinal columns, I wanted to speed up our process so I assumed that all the remaining categorical columns were not ordered.
+
+> Function `encode_onehot`
+
+`encode_onehot()` encodes categorical data by One-hot encoding.
+
+```{r encode_onehot}
+# encode all the other categorical Columns
+i <- unlist(factor_cols)
+df0 <- encode_onehot(df[, i, drop=FALSE], log = log_arg)
+df[, i] <- NULL
+df <- cbind(df, df0)
+```
+
+## Partitioning
+
+> Function `partition_random`
+
+`partition_random()` partitions a dataset randomly.
+
+```{r partition_random}
+# partition the dataset
+df0 <- partition_random(df[!is.na(df$SalePrice),], train = 8, test = FALSE, log = log_arg)
 ```
 
 ## The Log File

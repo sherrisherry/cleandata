@@ -1,1 +1,1 @@
-exportPattern("^[[:alpha:]]+")
+exportPattern("^inspect_.+|^encode_.+|^impute_.+|^partition_.+")

@@ -1,16 +1,18 @@
-\name{encode_binary}
-\alias{encode_binary}
-\title{Encode Binary Data Into 0 and 1}
+\name{encode_onehot}
+\alias{encode_onehot}
+\title{One-Hot Encoding}
 \usage{
-encode_binary(x, out.int=FALSE, full_print=TRUE, log=FALSE)
+encode_onehot(x, colname.sep = '_', drop1st = FALSE, full_print=TRUE, log=FALSE)
 }
 \description{
-Encodes binary data into 0 and 1. Optionally records the result into a log file.
+Encodes categorical data by One-hot encoding. Optionally records the result into a log file.
 }
 \arguments{
 \item{x}{The data frame}
 
-\item{out.int}{Whether to convert encoded \code{x} to integers. Only set to \code{TRUE} when no \code{NA} in \code{x} because \code{NA}s in x causes error when converting to integers.  By default, the encoded \code{x} is factorial.}
+\item{colname.sep}{A character or string that acts as an divider in the names of the columns of encoding results.}
+
+\item{drop1st}{Whether drop the 1st level of every encoded column.  The 1st level refers to the level that corresponds to 1 in a factor.}
 
 \item{full_print}{When set to \code{FALSE}, only print minimum information.  A full output includes summary of \code{x} before and after encoding.}
 
@@ -26,13 +28,17 @@ message('refer to vignettes if you want to use log files')
 
 # building a data frame
 A <- as.factor(c('x', 'y', 'x'))
-B <- as.factor(c('y', 'x', 'y'))
-C <- as.factor(c('i', 'j', 'i'))
-df <- data.frame(A, B, C)
+B <- as.factor(c('i', 'j', 'k'))
+df <- data.frame(A, B)
 
 # encoding
-df <- encode_binary(df)
-print(df)
+df0 <- encode_onehot(df)
+df0 <- cbind(df, df0)
+print(df0)
+df0 <- encode_onehot(df, colname.sep = '-', drop1st = TRUE)
+df0 <- cbind(df, df0)
+rm(df)
+print(df0)
 }
 \seealso{\code{\link{inspect_map}}, \code{\link{sink}}}
 \keyword{manip}
