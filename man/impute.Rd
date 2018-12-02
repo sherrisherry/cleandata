@@ -5,11 +5,11 @@
 \alias{impute_mean}
 \title{Impute Missing Values}
 \usage{
-impute_mode(x,cols=colnames(x),idx=row.names(x),log=FALSE)
+impute_mode(x,cols=colnames(x),idx=row.names(x),log = eval.parent(in_log_default))
 
-impute_median(x,cols=colnames(x),idx=row.names(x),log=FALSE)
+impute_median(x,cols=colnames(x),idx=row.names(x),log = eval.parent(in_log_default))
 
-impute_mean(x,cols=colnames(x),idx=row.names(x),log=FALSE)
+impute_mean(x,cols=colnames(x),idx=row.names(x),log = eval.parent(in_log_default))
 }
 \description{
 \code{impute_mode}:  Impute \code{NA}s by the modes of their corresponding columns.
@@ -23,9 +23,9 @@ impute_mean(x,cols=colnames(x),idx=row.names(x),log=FALSE)
 
 \item{cols}{The index of columns of \code{x} to be imputed.}
 
-\item{idx}{The index of rows of \code{x} to be used to calculate the values to impute \code{NA}s. Use this parameter to prevent leakage.}
+\item{idx}{The index of rows of \code{x} to be used to calculate the values to impute \code{NA}s.  Use this parameter to prevent leakage.}
 
-\item{log}{Controls log files.  If \code{FALSE}, no log file.  To produce log files, pass a list of \code{file}, \code{append}, and \code{split} as arguments for \code{sink()}.}
+\item{log}{Controls log files.  To produce log files, assign it or the \code{log_arg} variable in the parent environment (dynamic scope) a list of arguments for \code{sink()}, such as \code{file}, \code{append}, and \code{split}.}
 }
 \value{
 An imputed data frame.

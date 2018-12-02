@@ -2,9 +2,9 @@
 \alias{partition_random}
 \title{Partitioning A Dataset Randomly}
 \usage{
-partition_random(x, name = 'Partition', train, 
-				val = 10^ceiling(log10(train))-train, 
-				test = TRUE, seed = FALSE, log=FALSE)
+partition_random(x, name = 'Partition', train,
+    val = 10^ceiling(log10(train))-train, test = TRUE,
+		seed = FALSE, log = eval.parent(in_log_default))
 }
 \description{
 Designed to create a validation column. Optionally records the result into a log file.
@@ -22,7 +22,7 @@ Designed to create a validation column. Optionally records the result into a log
 
 \item{seed}{Whether to set a random seed.  If you want a reproducible result, pass a number to \code{seed} as the random seed.}
 
-\item{log}{Controls log files.  If \code{FALSE}, no log file.  To produce log files, pass a list of \code{file}, \code{append}, and \code{split} as arguments for \code{sink()}.}
+\item{log}{Controls log files.  To produce log files, assign it or the \code{log_arg} variable in the parent environment (dynamic scope) a list of arguments for \code{sink()}, such as \code{file}, \code{append}, and \code{split}.}
 }
 \value{
 A partitioned column.

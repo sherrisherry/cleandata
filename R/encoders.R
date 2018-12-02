@@ -1,5 +1,5 @@
-encode_ordinal<-function(x,order,none='',out.int=FALSE,full_print=TRUE,log=FALSE){
-  if(is.null(dim(x)))stop('data frame degraded to vector, use df[ , , drop=FALSE]')
+encode_ordinal<-function(x,order,none='',out.int=FALSE,full_print=TRUE, log = eval.parent(in_log_default)){
+  if(is.null(dim(x)))stop(in_msg1)
   if(full_print)print(summary(x))
   for(i in 1:ncol(x)){
     for(j in 1:length(order))levels(x[,i])[levels(x[,i])==order[j]] <- j
@@ -13,12 +13,12 @@ encode_ordinal<-function(x,order,none='',out.int=FALSE,full_print=TRUE,log=FALSE
       x[,i]<-as.integer(x[,i])}
     if(full_print)print(summary(x))
   }
-  if(is.list(log))log_plan1(x = x, log = log, sche.names = c(none,order), sche.codes = 0:length(order))
+  if(is.list(log))in_log1(x = x, log = log, sche.names = c(none,order), sche.codes = 0:length(order))
   return(x)
 }
 
-encode_binary<-function(x,out.int=FALSE,full_print=TRUE,log=FALSE){
-  if(is.null(dim(x)))stop('data frame degraded to vector, use df[ , , drop=FALSE]')
+encode_binary<-function(x,out.int=FALSE,full_print=TRUE, log = eval.parent(in_log_default)){
+  if(is.null(dim(x)))stop(in_msg1)
   if(full_print)print(summary(x))
   if(is.list(log)){
     map<-inspect_map(x,message=FALSE)
@@ -30,7 +30,7 @@ encode_binary<-function(x,out.int=FALSE,full_print=TRUE,log=FALSE){
       for(j in 1:ncol(y))levels(y[,j])<-c(0,1)
       x[,cols[[i]]]<-y
       cat(paste('coded',j,'cols','\n'))
-	  log_plan1(x = x, log = log, sche.names = lvs[[i]], sche.codes = c(0,1))
+	  in_log1(x = x, log = log, sche.names = lvs[[i]], sche.codes = c(0,1))
     }
     rm(y)
   }
@@ -48,8 +48,8 @@ encode_binary<-function(x,out.int=FALSE,full_print=TRUE,log=FALSE){
   return(x)
 }
 
-encode_onehot<-function(x, colname.sep = '_', drop1st=FALSE, full_print=TRUE, log=FALSE){
-  if(is.null(dim(x)))stop('data frame degraded to vector, use df[ , , drop=FALSE]')
+encode_onehot<-function(x, colname.sep = '_', drop1st=FALSE, full_print=TRUE, log = eval.parent(in_log_default)){
+  if(is.null(dim(x)))stop(in_msg1)
   if(sum(is.na(x)))warning('NAs are ignored in encoding')
   if(full_print)print(summary(x))
   cols<-colnames(x)
@@ -62,6 +62,6 @@ encode_onehot<-function(x, colname.sep = '_', drop1st=FALSE, full_print=TRUE, lo
   }
   if(full_print)print(apply(encoded,2,sum))
   if(is.list(log))
-	log_plan2(x = x, log = log, proc = 'e', method = 'Onehot', details = paste('Template of New Column Names: oldname', colname.sep, 'level; Dropping 1st Level: ', drop1st, sep=''))
+	in_log2(x = x, log = log, proc = 'e', method = 'Onehot', details = paste('Template of New Column Names: oldname', colname.sep, 'level; Dropping 1st Level: ', drop1st, sep=''))
   return(encoded)
 }

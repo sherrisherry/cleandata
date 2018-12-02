@@ -7,7 +7,8 @@ Encode Ordinal Data Into Integers
 Encodes ordinal data into sequential integers by a given order.  Optionally records the result into a log file.
 }
 \usage{
-encode_ordinal(x, order, none='', out.int=FALSE, full_print=TRUE, log=FALSE)
+encode_ordinal(x, order, none='', out.int=FALSE,
+    full_print=TRUE, log = eval.parent(in_log_default))
 }
 \arguments{
 \item{x}{The data frame}
@@ -20,7 +21,7 @@ encode_ordinal(x, order, none='', out.int=FALSE, full_print=TRUE, log=FALSE)
 
 \item{full_print}{When set to \code{FALSE}, only print minimum information.  A full output includes summary of \code{x} before and after encoding.}
 
-\item{log}{Controls log files.  If \code{FALSE}, no log file.  To produce log files, pass a list of \code{file}, \code{append}, and \code{split} as arguments for \code{sink()}.}
+\item{log}{Controls log files.  To produce log files, assign it or the \code{log_arg} variable in the parent environment (dynamic scope) a list of arguments for \code{sink()}, such as \code{file}, \code{append}, and \code{split}.}
 }
 \value{
 An encoded data frame.

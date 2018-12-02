@@ -1,1 +1,1 @@
-exportPattern("^inspect_.+|^encode_.+|^impute_.+|^partition_.+")
+exportPattern("^(.$|[^i].+|i[^n].*|in[^_].+)")

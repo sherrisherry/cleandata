@@ -1,5 +1,5 @@
-partition_random <- function(x, name = 'Partition', train, val = 10^ceiling(log10(train))-train, test = TRUE, seed = FALSE, log=FALSE){
-	if(is.null(dim(x)))stop('data frame degraded to vector, use df[ , , drop=FALSE]')
+partition_random <- function(x, name = 'Partition', train, val = 10^ceiling(log10(train))-train, test = TRUE, seed = FALSE, log = eval.parent(in_log_default)){
+	if(is.null(dim(x)))stop(in_msg1)
 	nrows <- nrow(x)
 	if(nrows < 10)stop('This dataset is too small to be partitioned')
 	test <- ifelse(test, 10^ceiling(log10(train))-train-val, 0)
@@ -25,6 +25,6 @@ partition_random <- function(x, name = 'Partition', train, val = 10^ceiling(log1
 	msg <- paste('Train: ', round(train/nrows*100,2), '%, Validation: ', round(val/nrows*100,2), '%, Test: ', round(test/nrows*100,2), '%', sep='')
 	cat(paste(msg,'\n'))
 	if(is.list(log))
-		log_plan2(x = y, cols = name, log = log, proc = 'p', method = 'Random', details = msg)
+		in_log2(x = y, cols = name, log = log, proc = 'p', method = 'Random', details = msg)
 	return(y)
 }

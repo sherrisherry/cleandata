@@ -2,7 +2,8 @@
 \alias{encode_onehot}
 \title{One-Hot Encoding}
 \usage{
-encode_onehot(x, colname.sep = '_', drop1st = FALSE, full_print=TRUE, log=FALSE)
+encode_onehot(x, colname.sep = '_', drop1st = FALSE,
+    full_print=TRUE, log = eval.parent(in_log_default))
 }
 \description{
 Encodes categorical data by One-hot encoding. Optionally records the result into a log file.
@@ -16,7 +17,7 @@ Encodes categorical data by One-hot encoding. Optionally records the result into
 
 \item{full_print}{When set to \code{FALSE}, only print minimum information.  A full output includes summary of \code{x} before and after encoding.}
 
-\item{log}{Controls log files.  If \code{FALSE}, no log file.  To produce log files, pass a list of \code{file}, \code{append}, and \code{split} as arguments for \code{sink()}.}
+\item{log}{Controls log files.  To produce log files, assign it or the \code{log_arg} variable in the parent environment (dynamic scope) a list of arguments for \code{sink()}, such as \code{file}, \code{append}, and \code{split}.}
 }
 \value{
 An encoded data frame.

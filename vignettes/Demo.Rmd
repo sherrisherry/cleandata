@@ -1,11 +1,11 @@
 ---
-title: "Wrangling Business Data by \"cleandata\" v0.2.0"
+title: "Wrangling Business Data by \"cleandata\" v0.3.0"
 author: "Sherry Zhao"
-date: "September 3, 2018"
+date: "November 23, 2018"
 output: html_document
 vignette: >
   %\VignetteIndexEntry{Wrangling Business Data by "cleandata"}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{R.rsp::asis}
   \usepackage[utf8]{inputenc}
 ---
 
@@ -25,7 +25,7 @@ Available on CRAN: <a href="https://cran.r-project.org/package=cleandata" target
 
 Source Codes on GitHub: <https://github.com/sherrisherry/cleandata>
 
-Issues and Suggestions: [https://github.com/sherrisherry/cleandata/issues](https://github.com/sherrisherry/cleandata/issues)
+* New in V0.3.0: log files can be produced by an environment variable *log_arg* or by assigning a list to parameter `log`.
 
 ### Dataset Used in This Demo
 
@@ -127,14 +127,16 @@ rm(data_map)
 
 ## Imputation and Encoding
 
-The functions for imputation and encoding keep track of your process by producing log files. This feature is by default disabled. To enable log files, I passed a list of arguments to the `log` parameter in every imputation or encoding function.
+The functions for imputation and encoding keep track of your process by producing log files. This feature is by default disabled. To enable log files, I created an environment variable *log_arg* to storep the list of arguments for `sink()`. In old versions, *log_arg* should be assigned to `log` parameter in every imputation or encoding function, which is still supported by this version.
 
 ```{r}
 # create a list of arguments for producing a log file
 log_arg <- list(file = 'log.txt', append = TRUE, split = FALSE)
 ```
 
-*log_arg* stroed the arguments I passed to parameter `log`. The log file was named "log.txt", new information was appended to the file, and the contents to the log file weren't printed to the standard output.
+*log_arg* can be a list of any arguments for `sink()`. In this example, the log file was named "log.txt", new information was appended to the file, and the contents to the log file weren't printed to the standard output.
+
+In this version, parameter `log` by default searches a list called *log_arg* in the dynamic scope parent environment and takes the value of *log_arg*. If `log` is assigned a list, it takes the assigned value. If no a list *log_arg* in the parent and no list is assigned to `log`, no log file.
 
 ### Imputation Functions
 
@@ -149,11 +151,11 @@ To prevent leakage, I instructed the imputation functions to use only rows of th
 ```{r impute}
 # impute NAs in factorial columns by the mode of corresponding columns
 lst <- unlist(factor_cols)
-df <- impute_mode(df, cols = lst, idx = !is.na(df$SalePrice), log = log_arg)
+df <- impute_mode(df, cols = lst, idx = !is.na(df$SalePrice))
 
 # impute NAs in numerical columns by the median of corresponding columns
 lst <- num_cols
-df <- impute_median(df, cols = lst, idx = !is.na(df$SalePrice), log = log_arg)
+df <- impute_median(df, cols = lst, idx = !is.na(df$SalePrice))
 
 # check the result
 inspect_na(df[, -ncol(df)], top = 5)
@@ -189,7 +191,7 @@ factor_levels$ExterQual
 ```{r encode_ordinal}
 # encoding ordinal columns
 i <- 'ExterQual'; lst <- c('Po', 'Fa', 'TA', 'Gd', 'Ex')
-df[, factor_cols[[i]]] <- encode_ordinal(df[, factor_cols[[i]]], order = lst, none = 'NoA', log = log_arg)
+df[, factor_cols[[i]]] <- encode_ordinal(df[, factor_cols[[i]]], order = lst, none = 'NoA')
 
 # removing encoded columns from the map
 factor_levels[[i]] <- NULL
@@ -208,7 +210,7 @@ However, the description file indicates that it has 4 possible values: 'ELO', 'N
 ```{r ordinal}
 # in dataset only "AllPub" "NoSeWa", with 2 NAs
 i <- 'Utilities'; lst <- c('ELO', 'NoSeWa', 'NoSewr', 'AllPub')
-df[, factor_cols[[i]]] <- encode_ordinal(df[, factor_cols[[i]], drop=FALSE], order = lst, log = log_arg)
+df[, factor_cols[[i]]] <- encode_ordinal(df[, factor_cols[[i]], drop=FALSE], order = lst)
 factor_levels[[i]]<-NULL
 factor_cols[[i]]<-NULL
 ```
@@ -230,7 +232,7 @@ cat(lst)
 ```{r encode_binary}
 # encode all the 2-level columns
 i <- unlist(factor_cols[lst])
-df[, i] <- encode_binary(df[, i, drop=FALSE], log = log_arg)
+df[, i] <- encode_binary(df[, i, drop=FALSE])
 factor_levels[lst] <- NULL
 factor_cols[lst] <- NULL
 ```
@@ -246,7 +248,7 @@ Although we may have found more ordinal columns, I wanted to speed up our proces
 ```{r encode_onehot}
 # encode all the other categorical Columns
 i <- unlist(factor_cols)
-df0 <- encode_onehot(df[, i, drop=FALSE], log = log_arg)
+df0 <- encode_onehot(df[, i, drop=FALSE])
 df[, i] <- NULL
 df <- cbind(df, df0)
 ```
@@ -259,7 +261,7 @@ df <- cbind(df, df0)
 
 ```{r partition_random}
 # partition the dataset
-df0 <- partition_random(df[!is.na(df$SalePrice),], train = 8, test = FALSE, log = log_arg)
+df0 <- partition_random(df[!is.na(df$SalePrice),], train = 8, test = FALSE)
 ```
 
 ## The Log File
